@@ -1,0 +1,15 @@
+sudo: required
+
+language: bash
+
+services:
+  - docker
+
+script:
+  - export KERNEL_SRC_BASE=$TRAVIS_BUILD_DIR/kernel.org/pub/scm/linux/kernel/git
+  - mkdir -p ${KERNEL_SRC_BASE} 
+  - pushd ${KERNEL_SRC_BASE} 
+  - git clone https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git stable/linux-stable
+  - popd
+  - ./scripts/build-docker.sh
+  - ./scripts/compile-kernel.sh stable defconfig gcc 
