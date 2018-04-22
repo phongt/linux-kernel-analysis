@@ -14,4 +14,5 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 	libelf-dev \
 	libssl-dev \
 	make \
+	sparse \
 	&& rm -rf /var/lib/apt/lists/*

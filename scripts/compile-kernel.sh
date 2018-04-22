@@ -10,11 +10,12 @@
 
 usage() {
 	echo "Usage:"
-	echo "  ./compile-kernel.sh <repository> <config> <compiler>"
+	echo "  ./compile-kernel.sh <repository> <config> <compiler> <checker>"
 	echo
         echo "    <repository> = torvalds | stable | next"
 	echo "    <config> = allnoconfig | allmodconfig | allyesconfig | defconfig | randconfig"
 	echo "    <compiler> = gcc | clang"
+	echo "    <checker> = sparse (option)"
 }
 
 # Provide help if requested
@@ -40,9 +41,9 @@ fi
 
 # Check if script is called with three arguments
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -lt 3 ]; then
 	echo "Error: Wrong number of arguments"
-	echo "Script must be called with three arguments"
+	echo "Script must be called with at least three arguments"
 	usage
 	exit 1
 fi
@@ -93,6 +94,15 @@ case "$3" in
 		;;
 esac
 
+case "$4" in
+	sparse )
+		SPARSE="C=2"
+		;;
+	*)
+		echo 'Compile without sparse checker'
+		;;
+esac
+
 # Start docker container and run build command
 
 case "$COMPILER" in
@@ -100,7 +110,7 @@ case "$COMPILER" in
 		docker run \
 			-v "$KERNEL_SRC_DIR:/linux/" \
 			kernel-gcc \
-			/bin/sh -c "cd linux && make clean && make $KERNEL_CONFIG && make -j32"
+			/bin/sh -c "cd linux && make clean && make $KERNEL_CONFIG && make -j32 $SPARSE"
 		;;
 	clang)
 		docker run \
@@ -109,6 +119,6 @@ case "$COMPILER" in
 			/bin/sh -c "cd linux && \
 				make CC=clang-5.0 clean && \
 				make HOSTCC=clang-5.0 $KERNEL_CONFIG && \
-				make -j32 HOSTCC=clang-5.0 CC=clang-5.0"
+				make -j32 HOSTCC=clang-5.0 CC=clang-5.0 $SPARSE"
 		;;
 esac
